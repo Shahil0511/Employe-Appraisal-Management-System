@@ -3,12 +3,13 @@ import axios from "axios";
 import { useDispatch } from "react-redux";
 import { login } from "../features/authSlice";
 import { toast, ToastContainer } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 import "react-toastify/dist/ReactToastify.css";
 
 const AuthPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const [isSignup, setIsSignup] = useState(false);
-
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -22,43 +23,36 @@ const AuthPage = () => {
       [id]: value,
     }));
   };
+
   const backendURL = "http://localhost:5000/api/auth";
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
     const { name, email, password } = formData;
     const endpoint = isSignup ? "/signup" : "/login";
-
-    const payload = {
-      email,
-      password,
-      ...(isSignup && { name }),
-    };
+    const payload = { email, password, ...(isSignup && { name }) };
 
     try {
       const response = await axios.post(`${backendURL}${endpoint}`, payload);
-
       toast.success(isSignup ? "Signup successful!" : "Login successful!");
 
-      dispatch(
-        login({
-          user: response.data.user,
-          token: response.data.token,
-        })
-      );
+      dispatch(login({ user: response.data.user, token: response.data.token }));
 
-      // Clear form data
       setFormData({ name: "", email: "", password: "" });
-    } catch (error) {
-      if (error.response) {
-        // When error response is available, display a specific message
-        toast.error(
-          error.response.data.message || "An error occurred. Please try again."
-        );
+
+      const userRole = response.data.user.role;
+      if (userRole === "admin") {
+        navigate("/admin");
+      } else if (userRole === "staff") {
+        navigate("/staff");
       } else {
-        // For any other network error or request failure
-        toast.error("Network error. Please try again later.");
+        navigate("/"); // Redirect to homepage if no specific role
       }
+    } catch (error) {
+      const errorMessage =
+        error.response?.data.message || "An error occurred. Please try again.";
+      toast.error(errorMessage);
     }
   };
 
@@ -77,7 +71,6 @@ const AuthPage = () => {
           {isSignup ? "Sign Up" : "Login"}
         </h2>
 
-        {/* Name input for signup */}
         {isSignup && (
           <div className="mb-4">
             <label
@@ -98,7 +91,6 @@ const AuthPage = () => {
           </div>
         )}
 
-        {/* Email input */}
         <div className="mb-4">
           <label
             className="block text-sm font-medium text-gray-700"
@@ -117,7 +109,6 @@ const AuthPage = () => {
           />
         </div>
 
-        {/* Password input */}
         <div className="mb-4">
           <label
             className="block text-sm font-medium text-gray-700"
@@ -136,7 +127,6 @@ const AuthPage = () => {
           />
         </div>
 
-        {/* Submit button */}
         <button
           type="submit"
           className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
@@ -144,7 +134,6 @@ const AuthPage = () => {
           {isSignup ? "Sign Up" : "Login"}
         </button>
 
-        {/* Toggle button */}
         <div className="mt-4 text-center">
           <button
             type="button"
