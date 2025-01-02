@@ -1,51 +1,51 @@
 import React from "react";
 import { NavLink } from "react-router-dom";
 
-const Sidebar = () => {
+const StaffSidebar = () => {
   return (
     <div className="w-64 h-screen bg-gray-800 text-white">
       <div className="p-4">
-        <h2 className="text-2xl font-bold">Admin Dashboard</h2>
+        <h2 className="text-2xl font-bold">Staff Dashboard</h2>
       </div>
       <div className="flex flex-col space-y-4 mt-6">
-        {/* Manage Appraisal Questions Link */}
+        {/* Self Appraisal Link */}
         <NavLink
-          to="/admin/questions"
+          to="/staff/self-appraisal"
           className={({ isActive }) =>
             isActive
               ? "bg-blue-600 text-white px-4 py-2 rounded-md"
               : "text-lg hover:bg-gray-600 px-4 py-2 rounded-md"
           }
         >
-          Manage Appraisal Questions
+          Self Appraisal
         </NavLink>
 
-        {/* Manage Participants Link */}
+        {/* Manage Appraisal Link */}
         <NavLink
-          to="/admin/participants"
+          to="/staff/manage-appraisal"
           className={({ isActive }) =>
             isActive
               ? "bg-blue-600 text-white px-4 py-2 rounded-md"
               : "text-lg hover:bg-gray-600 px-4 py-2 rounded-md"
           }
         >
-          Manage Participants
+          Manage Appraisal
         </NavLink>
 
-        {/* View All Submissions Link */}
+        {/* View Submissions Link */}
         <NavLink
-          to="/admin/submissions"
+          to="/staff/submissions"
           className={({ isActive }) =>
             isActive
               ? "bg-blue-600 text-white px-4 py-2 rounded-md"
               : "text-lg hover:bg-gray-600 px-4 py-2 rounded-md"
           }
         >
-          View All Submissions
+          View Submissions
         </NavLink>
       </div>
     </div>
   );
 };
 
-export default Sidebar;
+export default StaffSidebar;

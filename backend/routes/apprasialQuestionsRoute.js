@@ -1,14 +1,13 @@
-// src/routes/appraisalQuestionsRoutes.js
 import express from "express";
 import { check } from "express-validator";
 import appraisalQuestionsController from "../controllers/appraisalQuestionsController.js";
-import { verifyAdmin } from "../middlewares/authMiddleware.js"; // Assuming JWT auth middleware is available
+import { verifyAdmin } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 // Create a new question (Admin only)
 router.post(
-  "/create",
+  "/",
   verifyAdmin,
   [check("question", "Question is required").notEmpty()],
   appraisalQuestionsController.createQuestion

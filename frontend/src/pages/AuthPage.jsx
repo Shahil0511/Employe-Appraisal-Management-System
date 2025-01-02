@@ -15,6 +15,7 @@ const AuthPage = () => {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -24,10 +25,26 @@ const AuthPage = () => {
     }));
   };
 
+  const validateForm = () => {
+    const newErrors = {};
+    if (isSignup && !formData.name.trim()) {
+      newErrors.name = "Name is required";
+    }
+    if (!formData.email.trim()) {
+      newErrors.email = "Email is required";
+    }
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const backendURL = "http://localhost:5000/api/auth";
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!validateForm()) return;
 
     const { name, email, password } = formData;
     const endpoint = isSignup ? "/signup" : "/login";
@@ -59,85 +76,97 @@ const AuthPage = () => {
   const toggleForm = () => {
     setIsSignup(!isSignup);
     setFormData({ name: "", email: "", password: "" });
+    setErrors({});
   };
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100">
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white p-8 rounded shadow-md w-96"
-      >
-        <h2 className="text-2xl font-bold mb-6 text-center">
-          {isSignup ? "Sign Up" : "Login"}
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-blue-500 to-indigo-600 p-4">
+      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
+        <h2 className="text-2xl font-bold text-center text-gray-800 mb-6">
+          {isSignup ? "Create an Account" : "Welcome Back"}
         </h2>
 
-        {isSignup && (
+        <form onSubmit={handleSubmit}>
+          {isSignup && (
+            <div className="mb-4">
+              <label
+                className="block text-sm font-medium text-gray-700"
+                htmlFor="name"
+              >
+                Name
+              </label>
+              <input
+                type="text"
+                id="name"
+                value={formData.name}
+                onChange={handleChange}
+                className={`mt-1 block w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                  errors.name ? "border-red-500" : "border-gray-300"
+                }`}
+                placeholder="Your Name"
+              />
+              {errors.name && (
+                <p className="text-red-500 text-sm mt-1">{errors.name}</p>
+              )}
+            </div>
+          )}
+
           <div className="mb-4">
             <label
               className="block text-sm font-medium text-gray-700"
-              htmlFor="name"
+              htmlFor="email"
             >
-              Name
+              Email
             </label>
             <input
-              type="text"
-              id="name"
-              value={formData.name}
+              type="email"
+              id="email"
+              value={formData.email}
               onChange={handleChange}
-              required
-              className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-500"
-              placeholder="Your Name"
+              className={`mt-1 block w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                errors.email ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Your Email"
             />
+            {errors.email && (
+              <p className="text-red-500 text-sm mt-1">{errors.email}</p>
+            )}
           </div>
-        )}
 
-        <div className="mb-4">
-          <label
-            className="block text-sm font-medium text-gray-700"
-            htmlFor="email"
+          <div className="mb-6">
+            <label
+              className="block text-sm font-medium text-gray-700"
+              htmlFor="password"
+            >
+              Password
+            </label>
+            <input
+              type="password"
+              id="password"
+              value={formData.password}
+              onChange={handleChange}
+              className={`mt-1 block w-full border rounded-md p-2 focus:outline-none focus:ring-2 ${
+                errors.password ? "border-red-500" : "border-gray-300"
+              }`}
+              placeholder="Your Password"
+            />
+            {errors.password && (
+              <p className="text-red-500 text-sm mt-1">{errors.password}</p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 px-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 transition"
           >
-            Email
-          </label>
-          <input
-            type="email"
-            id="email"
-            value={formData.email}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-500"
-            placeholder="Your Email"
-          />
-        </div>
-
-        <div className="mb-4">
-          <label
-            className="block text-sm font-medium text-gray-700"
-            htmlFor="password"
-          >
-            Password
-          </label>
-          <input
-            type="password"
-            id="password"
-            value={formData.password}
-            onChange={handleChange}
-            required
-            className="mt-1 block w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:ring focus:ring-blue-500"
-            placeholder="Your Password"
-          />
-        </div>
-
-        <button
-          type="submit"
-          className="w-full py-2 px-4 bg-blue-600 text-white rounded-md hover:bg-blue-700"
-        >
-          {isSignup ? "Sign Up" : "Login"}
-        </button>
+            {isSignup ? "Sign Up" : "Login"}
+          </button>
+        </form>
 
         <div className="mt-4 text-center">
           <button
             type="button"
-            className="text-blue-600 hover:text-blue-800"
+            className="text-indigo-600 hover:underline"
             onClick={toggleForm}
           >
             {isSignup
@@ -145,7 +174,7 @@ const AuthPage = () => {
               : "Don't have an account? Sign Up"}
           </button>
         </div>
-      </form>
+      </div>
       <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );

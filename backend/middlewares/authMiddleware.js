@@ -13,12 +13,14 @@ export const verifyAdmin = (req, res, next) => {
     const tokenWithoutBearer = token.split(" ")[1];
     const decoded = jwt.verify(tokenWithoutBearer, process.env.JWT_SECRET);
 
-    // Directly use the decoded token properties
-    req.user = decoded; // Store the decoded token in req.user
+    // Store the decoded token in req.user
+    req.user = decoded;
+
     if (decoded.role !== "admin") {
-      // Check if the role is 'admin'
+      // Check if the user role is 'admin'
       return res.status(403).json({ message: "Access denied" });
     }
+
     next();
   } catch (err) {
     res.status(401).json({ message: "Token is not valid" });

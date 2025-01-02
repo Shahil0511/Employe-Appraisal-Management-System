@@ -9,7 +9,9 @@ const Navbar = () => {
   const navigate = useNavigate();
 
   const handleLogout = () => {
+    // Dispatch the logout action to clear the user from Redux state
     dispatch(logout());
+    // Redirect the user to the login page after logging out
     navigate("/login");
   };
 

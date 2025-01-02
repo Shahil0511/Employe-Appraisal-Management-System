@@ -1,28 +1,26 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { fetchQuestions } from "../features/appraisalSlice";
+import AppraisalForm from "../components/AppraisalForm";
+import ManagerAppraisalView from "../components/ManagerAppraisalView";
+import PeerJuniorAppraisalView from "../components/PeerJuniorAppraisalView";
+import StaffSidebar from "../components/StaffSidebar"; // Import StaffSidebar
 
 const StaffPage = ({ role, participantId }) => {
   const dispatch = useDispatch();
   const { questions, status, error, appraisals } = useSelector(
     (state) => state.appraisal
   );
-  const [answers, setAnswers] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    dispatch(fetchQuestions()); // Fetch the appraisal questions
+    dispatch(fetchQuestions());
   }, [dispatch]);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setAnswers({ ...answers, [name]: value });
-  };
-
-  const handleSubmit = async () => {
+  const handleSubmit = async (answers) => {
     setIsSubmitting(true);
     try {
-      // Save the answers (to backend API)
+      // Call API to submit the self-appraisal
       console.log("Submitting self-appraisal", answers);
       setIsSubmitting(false);
     } catch (error) {
@@ -32,96 +30,75 @@ const StaffPage = ({ role, participantId }) => {
   };
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-4xl font-bold text-gray-800">Staff Appraisal</h1>
+    <div className="flex min-h-screen bg-gray-50">
+      {/* Sidebar for staff */}
+      <StaffSidebar />
 
-      {/* Display different content based on the user's role */}
-      {role === "participant" && (
-        <div>
-          <h2 className="text-2xl font-semibold">Self-Appraisal Form</h2>
-          {status === "loading" && <p>Loading questions...</p>}
-          {status === "failed" && <p className="text-red-500">{error}</p>}
-          {status === "succeeded" && questions.length === 0 && (
-            <p>No questions available.</p>
+      {/* Main content area */}
+      <div className="flex-1 py-10 px-5 sm:px-8 lg:px-12">
+        <div className="max-w-7xl mx-auto bg-white rounded-lg shadow-xl p-6 sm:p-8">
+          <h1 className="text-3xl sm:text-4xl font-semibold text-gray-800 mb-6">
+            Staff Appraisal
+          </h1>
+
+          {/* Loading state */}
+          {status === "loading" && (
+            <div className="flex justify-center items-center space-x-2 mb-6">
+              <div className="w-6 h-6 border-4 border-t-4 border-blue-600 border-solid rounded-full animate-spin"></div>
+              <span className="text-lg text-gray-600">
+                Loading appraisal data...
+              </span>
+            </div>
           )}
-          {status === "succeeded" && questions.length > 0 && (
-            <div>
-              {questions.map((question, index) => (
-                <div key={index} className="mt-4">
-                  <label
-                    htmlFor={`question-${index}`}
-                    className="block text-lg font-medium text-gray-700"
-                  >
-                    {question.question}
-                  </label>
-                  <textarea
-                    id={`question-${index}`}
-                    name={`question-${index}`}
-                    value={answers[`question-${index}`] || ""}
-                    onChange={handleInputChange}
-                    className="w-full p-2 mt-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    rows="4"
-                    placeholder="Your answer here..."
-                  />
-                </div>
-              ))}
+
+          {/* Error state */}
+          {status === "failed" && error && (
+            <div className="bg-red-100 text-red-800 p-4 rounded-lg mb-6">
+              <strong>Error:</strong> {error}
+            </div>
+          )}
+
+          {/* Conditional rendering based on user role */}
+          {role === "participant" && status === "succeeded" && (
+            <AppraisalForm
+              questions={questions}
+              onSubmit={handleSubmit}
+              isSubmitting={isSubmitting}
+            />
+          )}
+
+          {role === "manager" && (
+            <ManagerAppraisalView
+              appraisals={appraisals}
+              participantId={participantId}
+            />
+          )}
+
+          {(role === "peer" || role === "junior") && (
+            <PeerJuniorAppraisalView
+              appraisals={appraisals}
+              participantId={participantId}
+            />
+          )}
+
+          {/* Submit button for staff */}
+          {role === "participant" && status === "succeeded" && (
+            <div className="mt-8 text-center">
               <button
-                onClick={handleSubmit}
+                onClick={() => handleSubmit()}
                 disabled={isSubmitting}
-                className="mt-6 bg-blue-500 text-white py-2 px-4 rounded-md disabled:bg-gray-300"
+                className={`w-full sm:w-auto px-6 py-3 rounded-lg font-semibold text-white ${
+                  isSubmitting
+                    ? "bg-gray-500 cursor-not-allowed"
+                    : "bg-blue-600 hover:bg-blue-700"
+                } transition`}
               >
                 {isSubmitting ? "Submitting..." : "Submit Appraisal"}
               </button>
             </div>
           )}
         </div>
-      )}
-
-      {/* For Managers */}
-      {role === "manager" && (
-        <div>
-          <h2 className="text-2xl font-semibold">View Appraisal Forms</h2>
-          <div>
-            {appraisals
-              .filter((appraisal) => appraisal.participantId === participantId)
-              .map((appraisal, index) => (
-                <div key={index} className="mt-4">
-                  <h3 className="font-semibold">Self-Appraisal</h3>
-                  {/* Display self-appraisal form for Vikas */}
-                  <textarea
-                    disabled
-                    value={appraisal.selfAppraisal || "No submission yet"}
-                    className="w-full p-2 mt-2 border border-gray-300 rounded-md"
-                    rows="4"
-                  />
-                </div>
-              ))}
-          </div>
-        </div>
-      )}
-
-      {/* For Peers and Juniors */}
-      {role === "peer" ||
-        (role === "junior" && (
-          <div>
-            <h2 className="text-2xl font-semibold">View Your Appraisal Form</h2>
-            <div>
-              {appraisals
-                .filter((appraisal) => appraisal.submitterId === participantId)
-                .map((appraisal, index) => (
-                  <div key={index} className="mt-4">
-                    <h3 className="font-semibold">Your Appraisal for Vikas</h3>
-                    <textarea
-                      disabled
-                      value={appraisal.answers || "No submission yet"}
-                      className="w-full p-2 mt-2 border border-gray-300 rounded-md"
-                      rows="4"
-                    />
-                  </div>
-                ))}
-            </div>
-          </div>
-        ))}
+      </div>
     </div>
   );
 };

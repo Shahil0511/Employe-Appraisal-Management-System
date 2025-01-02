@@ -1,39 +1,53 @@
 import React, { useState, useEffect } from "react";
+import axios from "axios"; // Assuming you're using axios for API requests
 
 const ViewSubmissions = () => {
   const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch all the submissions (this would come from an API or Redux)
-    setSubmissions([
-      {
-        participant: "Vikas",
-        selfAppraisal: "Self Appraisal 1",
-        managerFeedback: "Manager feedback 1",
-        peerFeedback: "Peer feedback 1",
-      },
-      // More submissions...
-    ]);
+    const fetchSubmissions = async () => {
+      try {
+        const response = await axios.get("/api/submissions"); // API endpoint for fetching submissions
+        setSubmissions(response.data);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching submissions:", error);
+        setLoading(false);
+      }
+    };
+    fetchSubmissions();
   }, []);
 
+  if (loading) {
+    return (
+      <div className="p-6 bg-white shadow-md rounded-lg">
+        <h2 className="text-2xl font-bold mb-4">Loading Submissions...</h2>
+      </div>
+    );
+  }
+
   return (
-    <div>
-      <h2 className="text-2xl font-semibold mb-4">View All Submissions</h2>
-      {submissions.length > 0 ? (
-        <div>
+    <div className="p-6 bg-white shadow-md rounded-lg">
+      <h2 className="text-2xl font-bold mb-4">View Submissions</h2>
+
+      {submissions.length === 0 ? (
+        <p className="text-lg text-gray-600">No submissions available.</p>
+      ) : (
+        <div className="space-y-4">
           {submissions.map((submission, index) => (
-            <div key={index} className="mb-4 border p-4 rounded-lg">
-              <h3 className="font-semibold">
-                Appraisal for: {submission.participant}
-              </h3>
-              <p>Self-Appraisal: {submission.selfAppraisal}</p>
-              <p>Manager Feedback: {submission.managerFeedback}</p>
-              <p>Peer Feedback: {submission.peerFeedback}</p>
+            <div
+              key={index}
+              className="p-4 bg-gray-100 rounded-md hover:bg-gray-200 transition duration-300 ease-in-out"
+            >
+              <div className="flex justify-between items-center">
+                <p className="text-lg font-semibold">{submission.title}</p>
+                <span className="text-sm text-gray-500">{submission.date}</span>
+              </div>
+              <p className="mt-2 text-gray-700">{submission.description}</p>
             </div>
           ))}
         </div>
-      ) : (
-        <p>No submissions available.</p>
       )}
     </div>
   );
